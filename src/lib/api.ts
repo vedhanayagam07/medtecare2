@@ -1,12 +1,8 @@
 // ============================================
-// SENTINELOPS — CENTRALIZED API CLIENT
+// MEDTECARE — CENTRALIZED API CLIENT
 // All backend communication goes through here.
 // Falls back gracefully so UI never crashes.
 // ============================================
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-// ---- Types matching backend response shapes ----
 
 import type {
   Equipment,
@@ -15,6 +11,14 @@ import type {
   KPIData,
   RiskDataPoint,
 } from "@/lib/mock-data";
+
+import {
+  equipmentList,
+  kpiData,
+  riskTrendData,
+} from "@/lib/mock-data";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface DeviceStatsResponse {
   totalDevices: number;
@@ -65,9 +69,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | nul
 
 // ---- Public API functions ----
 
-import { equipmentList } from "@/lib/mock-data";
-
-/** Fetch real devices from ML service */
+/** Fetch real devices from ML service, fallback to mock data */
 export async function fetchDevices(limit = 20): Promise<Equipment[]> {
   const data = await apiFetch<{ devices: Equipment[] }>(`/api/v1/devices?limit=${limit}`);
   if (!data || !data.devices || data.devices.length === 0) {
@@ -81,9 +83,18 @@ export async function simulateLiveData(): Promise<{ message: string, device: Equ
   return apiFetch<{ message: string, device: Equipment }>(`/api/v1/devices/simulate-live`, { method: "POST" });
 }
 
-/** Fetch KPI stats computed from full dataset */
+/** Fetch KPI stats computed from full dataset, fallback to mock data */
 export async function fetchStats(): Promise<DeviceStatsResponse | null> {
-  return apiFetch<DeviceStatsResponse>("/api/v1/devices/stats");
+  const data = await apiFetch<DeviceStatsResponse>("/api/v1/devices/stats");
+  if (!data) {
+    return {
+      totalDevices: kpiData[0].value,
+      devicesAtRisk: kpiData[1].value,
+      predictedFailures30d: kpiData[2].value,
+      avgRiskScore: 45,
+    };
+  }
+  return data;
 }
 
 /** Fetch ML-derived alerts */
@@ -110,10 +121,13 @@ export async function updateTicketStatus(
   return data?.updated ?? false;
 }
 
-/** Fetch 30-day risk trend data */
+/** Fetch 30-day risk trend data, fallback to mock data */
 export async function fetchRiskTrend(): Promise<RiskDataPoint[]> {
   const data = await apiFetch<{ trend: RiskDataPoint[] }>("/api/v1/risk-trend");
-  return data?.trend ?? [];
+  if (!data || !data.trend || data.trend.length === 0) {
+    return riskTrendData;
+  }
+  return data.trend;
 }
 
 /** Run AI diagnostics on a device */
