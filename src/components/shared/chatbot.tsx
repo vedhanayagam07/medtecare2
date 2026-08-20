@@ -1,15 +1,21 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useChat } from "@ai-sdk/react";
 import { MessageSquare, X, Send, Bot, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -18,13 +24,65 @@ export function Chatbot() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || status === "streaming") return;
-    sendMessage({ role: "user", parts: [{ type: "text", text: input }] });
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.reply || "Sorry, I could not generate a response.",
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simple markdown bold renderer
+  const renderContent = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={i}>{part.slice(2, -2)}</strong>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
   };
 
   return (
@@ -69,7 +127,10 @@ export function Chatbot() {
                   <div className="rounded-full bg-blue-100 p-3 text-blue-600">
                     <MessageSquare className="h-6 w-6" />
                   </div>
-                  <p className="text-sm">Hi! How can I help you today?</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Hi! I&apos;m MedteCare Assistant</p>
+                    <p className="text-xs text-slate-400">Ask me about risk assessments, SHAP, devices, or the CatBoost ML model.</p>
+                  </div>
                 </div>
               )}
               {messages.map((m) => (
@@ -87,13 +148,13 @@ export function Chatbot() {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+                      "max-w-[80%] rounded-2xl px-4 py-2 text-sm leading-relaxed whitespace-pre-line",
                       m.role === "user"
                         ? "bg-blue-600 text-white rounded-br-none"
                         : "bg-[var(--surface-2)] text-[var(--text-primary)] rounded-bl-none border border-[var(--border-default)] shadow-sm"
                     )}
                   >
-                    {m.parts?.map(p => p.type === 'text' ? p.text : '').join('') || ''}
+                    {m.role === "assistant" ? renderContent(m.content) : m.content}
                   </div>
                   {m.role === "user" && (
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600">
@@ -102,7 +163,7 @@ export function Chatbot() {
                   )}
                 </div>
               ))}
-              {status === "streaming" && (
+              {isLoading && (
                 <div className="flex w-full justify-start gap-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                     <Bot className="h-4 w-4" />
@@ -131,8 +192,8 @@ export function Chatbot() {
                 />
                 <button
                   type="submit"
-                  disabled={!input || !input.trim() || status === "streaming"}
-                  className="absolute right-1.5 rounded-full bg-blue-600 p-1.5 text-white disabled:opacity-50 transition-colors"
+                  disabled={!input.trim() || isLoading}
+                  className="absolute right-1.5 rounded-full bg-blue-600 p-1.5 text-white disabled:opacity-50 transition-colors hover:bg-blue-700"
                 >
                   <Send className="h-4 w-4" />
                 </button>
