@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const [input, setInput] = useState("");
+  const { messages, sendMessage, status } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -18,6 +19,13 @@ export function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || status === "streaming") return;
+    sendMessage({ role: "user", parts: [{ type: "text", text: input }] });
+    setInput("");
+  };
 
   return (
     <>
@@ -85,7 +93,7 @@ export function Chatbot() {
                         : "bg-[var(--surface-2)] text-[var(--text-primary)] rounded-bl-none border border-[var(--border-default)] shadow-sm"
                     )}
                   >
-                    {m.content}
+                    {m.parts?.map(p => p.type === 'text' ? p.text : '').join('') || ''}
                   </div>
                   {m.role === "user" && (
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600">
@@ -94,7 +102,7 @@ export function Chatbot() {
                   )}
                 </div>
               ))}
-              {isLoading && (
+              {status === "streaming" && (
                 <div className="flex w-full justify-start gap-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                     <Bot className="h-4 w-4" />
@@ -117,13 +125,13 @@ export function Chatbot() {
                 <input
                   type="text"
                   value={input}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask me anything..."
                   className="w-full rounded-full border border-[var(--border-default)] bg-[var(--surface-2)] pl-4 pr-12 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 <button
                   type="submit"
-                  disabled={!input || !input.trim() || isLoading}
+                  disabled={!input || !input.trim() || status === "streaming"}
                   className="absolute right-1.5 rounded-full bg-blue-600 p-1.5 text-white disabled:opacity-50 transition-colors"
                 >
                   <Send className="h-4 w-4" />
