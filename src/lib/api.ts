@@ -65,10 +65,15 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | nul
 
 // ---- Public API functions ----
 
+import { equipmentList } from "@/lib/mock-data";
+
 /** Fetch real devices from ML service */
 export async function fetchDevices(limit = 20): Promise<Equipment[]> {
   const data = await apiFetch<{ devices: Equipment[] }>(`/api/v1/devices?limit=${limit}`);
-  return data?.devices ?? [];
+  if (!data || !data.devices || data.devices.length === 0) {
+    return equipmentList.slice(0, limit);
+  }
+  return data.devices;
 }
 
 /** Simulate a live telemetry spike on a random device */
