@@ -1,13 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { RiskGauge } from "@/components/shared/risk-gauge";
-import { demoPrimaryDevice, manualReferences } from "@/lib/mock-data";
+import { equipmentList, manualReferences } from "@/lib/mock-data";
 import { Stethoscope, AlertTriangle, BookOpen } from "lucide-react";
 
 export default function DiagnosticsPage() {
+  const [selectedDeviceId, setSelectedDeviceId] = useState(equipmentList[0].id);
+  const selectedDevice = equipmentList.find(d => d.id === selectedDeviceId) || equipmentList[0];
   return (
     <AppShell>
       <div className="space-y-6 text-left">
@@ -25,40 +27,54 @@ export default function DiagnosticsPage() {
           </StatusBadge>
         </div>
 
+        <div className="flex justify-end">
+          <select
+            value={selectedDeviceId}
+            onChange={(e) => setSelectedDeviceId(e.target.value)}
+            className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--text-primary)] font-mono focus:border-[#007AFF] focus:outline-none cursor-pointer"
+          >
+            {equipmentList.map((dev) => (
+              <option key={dev.id} value={dev.id}>
+                {dev.id} - {dev.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Device Banner */}
         <div className="card-elevated p-5 flex flex-col sm:flex-row sm:items-center gap-6">
           <div className="flex-shrink-0 flex items-center justify-center p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border-default)]">
-             <RiskGauge score={demoPrimaryDevice.riskScore} size={120} />
+             <RiskGauge score={selectedDevice.riskScore} size={120} />
           </div>
 
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-mono font-bold text-[var(--blue-accent)]">{demoPrimaryDevice.id}</span>
+              <span className="text-xs font-mono font-bold text-[var(--blue-accent)]">{selectedDevice.id}</span>
               <span className="text-[var(--text-tertiary)]">•</span>
-              <span className="text-xs text-[var(--text-tertiary)]">{demoPrimaryDevice.manufacturer}</span>
+              <span className="text-xs text-[var(--text-tertiary)]">{selectedDevice.manufacturer || "B. Braun Melsungen AG"}</span>
             </div>
 
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">{demoPrimaryDevice.name}</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">{selectedDevice.name}</h2>
             <p className="text-xs text-[var(--text-secondary)]">
-              Classification: <span className="font-mono text-[var(--text-primary)]">{demoPrimaryDevice.classification}</span> | Risk Class: <span className="font-mono text-[var(--text-primary)]">{demoPrimaryDevice.riskClass}</span>
+              Classification: <span className="font-mono text-[var(--text-primary)]">{selectedDevice.classification || "Active Equipment"}</span> | Risk Class: <span className="font-mono text-[var(--text-primary)]">{selectedDevice.riskClass || "Class II"}</span>
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 mt-1 border-t border-[var(--border-subtle)] text-xs font-mono">
               <div>
                 <span className="text-[0.6rem] text-[var(--text-tertiary)] block">PREVIOUS RECALLS</span>
-                <span className="font-bold text-red-500">{demoPrimaryDevice.previousRecalls}</span>
+                <span className="font-bold text-red-500">{selectedDevice.previousRecalls ?? 1}</span>
               </div>
               <div>
                 <span className="text-[0.6rem] text-[var(--text-tertiary)] block">SAFETY NOTICES</span>
-                <span className="font-bold text-amber-500">{demoPrimaryDevice.previousSafetyNotices}</span>
+                <span className="font-bold text-amber-500">{selectedDevice.previousSafetyNotices ?? 2}</span>
               </div>
               <div>
                 <span className="text-[0.6rem] text-[var(--text-tertiary)] block">SERVICE AGE</span>
-                <span className="font-bold text-[var(--text-primary)]">{demoPrimaryDevice.yearsInService} yrs</span>
+                <span className="font-bold text-[var(--text-primary)]">{selectedDevice.yearsInService ?? 4.5} yrs</span>
               </div>
               <div>
                 <span className="text-[0.6rem] text-[var(--text-tertiary)] block">ADVERSE EVENTS</span>
-                <span className="font-bold text-orange-500">{demoPrimaryDevice.previousEvents}</span>
+                <span className="font-bold text-orange-500">{selectedDevice.previousEvents ?? 3}</span>
               </div>
             </div>
           </div>
