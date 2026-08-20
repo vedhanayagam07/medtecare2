@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, Activity } from "lucide-react";
 import { GlassCard } from "@/components/shared/glass-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfidenceRing } from "@/components/shared/risk-gauge";
@@ -15,54 +15,59 @@ interface EquipmentCardProps {
 }
 
 export function EquipmentCard({ equipment, index = 0 }: EquipmentCardProps) {
+  const isCritical = equipment.status === "critical";
+  const isHigh = equipment.status === "high";
+  const isModerate = equipment.status === "moderate";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.06 }}
+      transition={{ duration: 0.3, delay: index * 0.04 }}
     >
-      <GlassCard className="relative overflow-hidden">
-        {/* Risk score accent bar */}
+      <GlassCard className="relative overflow-hidden pl-5">
+        {/* Left accent bar */}
         <div
           className="absolute top-0 left-0 h-full w-1 rounded-l-xl"
           style={{
-            background:
-              equipment.status === "critical"
-                ? "var(--sentinel-critical)"
-                : equipment.status === "warning"
-                ? "var(--sentinel-warning)"
-                : "var(--sentinel-healthy)",
+            background: isCritical
+              ? "#DC2626"
+              : isHigh
+              ? "#EA580C"
+              : isModerate
+              ? "#D97706"
+              : "#16A34A",
           }}
         />
 
-        <div className="flex items-start justify-between pl-2">
-          <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-start justify-between">
+          <div className="min-w-0 flex-1 space-y-1.5 text-left">
             <div className="flex items-center gap-2">
-              <h4 className="truncate text-sm font-semibold text-foreground">
-                {equipment.name}
+              <h4 className="truncate text-xs font-bold text-slate-100 font-mono">
+                {equipment.id}
               </h4>
-              <StatusBadge variant={equipment.status} pulse={equipment.status === "critical"}>
+              <StatusBadge variant={equipment.status} pulse={isCritical}>
                 {equipment.status}
               </StatusBadge>
             </div>
 
-            <p className="text-xs text-muted-foreground">{equipment.type}</p>
+            <h5 className="text-xs font-semibold text-slate-700">{equipment.name}</h5>
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <p className="text-[0.65rem] font-medium text-[var(--text-tertiary)]">
+              {equipment.manufacturer} • Class: {equipment.riskClass || "Class IIb"}
+            </p>
+
+            <div className="flex items-center gap-3 text-[0.65rem] text-[var(--text-tertiary)]">
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="h-3 w-3 text-slate-500" />
                 {equipment.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatRelativeTime(equipment.lastUpdated)}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-1 ml-3">
+          <div className="flex flex-col items-center gap-1 ml-3 shrink-0">
             <ConfidenceRing percent={equipment.confidencePercent} />
-            <span className="text-[0.55rem] text-muted-foreground">Confidence</span>
+            <span className="text-[0.55rem] font-mono text-[var(--text-tertiary)]">Confidence</span>
           </div>
         </div>
       </GlassCard>
@@ -77,28 +82,30 @@ interface FleetGridProps {
 export function FleetGrid({ equipment }: FleetGridProps) {
   return (
     <GlassCard hover={false} padding="lg">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
-          <h3 className="text-base font-semibold text-foreground">Fleet Risk Map</h3>
-          <p className="text-xs text-muted-foreground">
-            {equipment.length} monitored assets
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Medical Asset Risk Inventory</h3>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            {equipment.length} dataset records evaluated for future-event probability
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {(["critical", "warning", "healthy"] as const).map((status) => (
+        <div className="flex items-center gap-3 font-mono">
+          {(["critical", "high", "moderate", "low"] as const).map((status) => (
             <div key={status} className="flex items-center gap-1.5">
               <div
                 className="h-2 w-2 rounded-full"
                 style={{
                   background:
                     status === "critical"
-                      ? "var(--sentinel-critical)"
-                      : status === "warning"
-                      ? "var(--sentinel-warning)"
-                      : "var(--sentinel-healthy)",
+                      ? "#DC2626"
+                      : status === "high"
+                      ? "#EA580C"
+                      : status === "moderate"
+                      ? "#D97706"
+                      : "#16A34A",
                 }}
               />
-              <span className="text-xs capitalize text-muted-foreground">{status}</span>
+              <span className="text-[0.65rem] capitalize text-[var(--text-tertiary)] font-medium">{status}</span>
             </div>
           ))}
         </div>
@@ -112,3 +119,4 @@ export function FleetGrid({ equipment }: FleetGridProps) {
     </GlassCard>
   );
 }
+

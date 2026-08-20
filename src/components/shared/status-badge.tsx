@@ -2,12 +2,11 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import type { EquipmentStatus, AlertSeverity, TicketPriority } from "@/lib/mock-data";
 
-type BadgeVariant = EquipmentStatus | AlertSeverity | TicketPriority;
+export type RiskLevel = "low" | "moderate" | "high" | "critical" | "healthy" | "warning" | "medium";
 
 interface StatusBadgeProps {
-  variant: BadgeVariant;
+  variant: RiskLevel | string;
   children: React.ReactNode;
   className?: string;
   pulse?: boolean;
@@ -15,21 +14,13 @@ interface StatusBadgeProps {
 }
 
 const variantClasses: Record<string, string> = {
-  healthy: "bg-sentinel-healthy/15 text-sentinel-healthy border-sentinel-healthy/30",
-  low: "bg-sentinel-healthy/15 text-sentinel-healthy border-sentinel-healthy/30",
-  warning: "bg-sentinel-warning/15 text-sentinel-warning border-sentinel-warning/30",
-  medium: "bg-sentinel-blue/15 text-sentinel-blue-light border-sentinel-blue/30",
-  high: "bg-sentinel-warning/15 text-sentinel-warning border-sentinel-warning/30",
-  critical: "bg-sentinel-critical/15 text-sentinel-critical border-sentinel-critical/30",
-};
-
-const pulseColors: Record<string, string> = {
-  healthy: "bg-sentinel-healthy",
-  low: "bg-sentinel-healthy",
-  warning: "bg-sentinel-warning",
-  medium: "bg-sentinel-blue",
-  high: "bg-sentinel-warning",
-  critical: "bg-sentinel-critical",
+  low: "bg-emerald-950/80 text-emerald-400 border-emerald-800/60",
+  healthy: "bg-emerald-950/80 text-emerald-400 border-emerald-800/60",
+  moderate: "bg-amber-950/80 text-amber-400 border-amber-800/60",
+  warning: "bg-amber-950/80 text-amber-400 border-amber-800/60",
+  medium: "bg-sky-950/80 text-sky-400 border-sky-800/60",
+  high: "bg-orange-950/80 text-orange-400 border-orange-800/60",
+  critical: "bg-rose-950/80 text-rose-400 border-rose-800/60",
 };
 
 export function StatusBadge({
@@ -39,29 +30,21 @@ export function StatusBadge({
   pulse = false,
   size = "sm",
 }: StatusBadgeProps) {
+  const normalizedVariant = String(variant).toLowerCase();
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border font-semibold uppercase tracking-wider",
-        size === "sm" ? "px-2.5 py-0.5 text-[0.65rem]" : "px-3 py-1 text-xs",
-        variantClasses[variant] || variantClasses.healthy,
+        "inline-flex items-center gap-1.5 rounded border font-mono font-semibold uppercase tracking-wider",
+        size === "sm" ? "px-2 py-0.5 text-[0.65rem]" : "px-2.5 py-1 text-xs",
+        variantClasses[normalizedVariant] || variantClasses.low,
         className
       )}
     >
       {pulse && (
-        <span className="relative flex h-1.5 w-1.5">
-          <span
-            className={cn(
-              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
-              pulseColors[variant]
-            )}
-          />
-          <span
-            className={cn(
-              "relative inline-flex h-1.5 w-1.5 rounded-full",
-              pulseColors[variant]
-            )}
-          />
+        <span className="relative flex h-1.5 w-1.5 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
         </span>
       )}
       {children}

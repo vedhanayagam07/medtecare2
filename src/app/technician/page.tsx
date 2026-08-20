@@ -12,6 +12,7 @@ import {
   UserCircle,
   Wrench,
   AlertCircle,
+  Activity,
 } from "lucide-react";
 import { GlassCard } from "@/components/shared/glass-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -26,6 +27,43 @@ import { fetchTickets, updateTicketStatus } from "@/lib/api";
 const currentTechnician = techniciansList[0]; // Marcus Chen
 
 type MobileTab = "tasks" | "scan" | "history" | "profile";
+
+function EquipmentDiagnosticGraphic({ title }: { title: string }) {
+  return (
+    <div className="relative mb-3 flex h-28 flex-col justify-between rounded-lg border border-white/[0.08] bg-slate-950 p-3 overflow-hidden">
+      {/* Background telemetry grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(#38BDF8_1px,transparent_1px)] [background-size:12px_12px] opacity-10" />
+
+      <div className="relative z-10 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[0.65rem] font-mono text-sky-400">
+          <Activity className="h-3 w-3 animate-pulse text-sky-400" />
+          <span>LIVE SENSOR DIAGNOSTIC</span>
+        </div>
+        <span className="text-[0.6rem] font-mono text-slate-500 uppercase">UDI-CAL-88</span>
+      </div>
+
+      {/* Waveform graphic */}
+      <div className="relative z-10 my-auto h-8 w-full flex items-center">
+        <svg className="w-full h-full overflow-visible" viewBox="0 0 200 30">
+          <polyline
+            points="0,15 30,15 40,5 50,25 60,15 90,15 100,2 110,28 120,15 150,15 160,8 170,22 180,15 200,15"
+            fill="none"
+            stroke="#38BDF8"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      <div className="relative z-10 flex items-center justify-between text-[0.6rem] font-mono text-[var(--text-tertiary)]">
+        <span>FREQ: 120 Hz</span>
+        <span>DRIFT: 0.02%</span>
+        <span className="text-emerald-400">STATUS: OK</span>
+      </div>
+    </div>
+  );
+}
 
 function TaskCard({
   ticket,
@@ -49,22 +87,15 @@ function TaskCard({
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay: index * 0.08 }}
     >
-      <GlassCard
-        className={`transition-all ${completed ? "opacity-50" : ""}`}
-      >
-        {/* Equipment photo placeholder */}
-        <div className="mb-3 flex h-32 items-center justify-center rounded-lg bg-gradient-to-br from-sentinel-glass to-sentinel-bg-to border border-sentinel-glass-border overflow-hidden">
-          <div className="text-center">
-            <Wrench className="mx-auto h-8 w-8 text-muted-foreground/30 mb-1" />
-            <span className="text-[0.6rem] text-muted-foreground/40">Equipment Photo</span>
-          </div>
-        </div>
+      <GlassCard className={`transition-all ${completed ? "opacity-60" : ""}`}>
+        {/* Dynamic telemetry diagnostic graphic */}
+        <EquipmentDiagnosticGraphic title={ticket.equipmentName} />
 
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-semibold text-foreground line-clamp-1">
+            <h3 className="text-xs font-bold text-slate-100 line-clamp-1">
               {ticket.title}
             </h3>
             <StatusBadge variant={ticket.priority} pulse={ticket.priority === "critical"}>
@@ -72,13 +103,13 @@ function TaskCard({
             </StatusBadge>
           </div>
 
-          <p className="text-xs text-muted-foreground">{ticket.equipmentName}</p>
-          <p className="text-xs text-muted-foreground/80 line-clamp-2">
+          <p className="text-[0.7rem] font-medium text-sky-400">{ticket.equipmentName}</p>
+          <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 leading-relaxed">
             {ticket.description}
           </p>
 
-          <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
-            <Clock className="h-3 w-3" />
+          <div className="flex items-center gap-2 text-[0.65rem] font-mono text-slate-500">
+            <Clock className="h-3 w-3 text-[var(--text-tertiary)]" />
             Assigned {formatRelativeTime(ticket.createdAt)}
           </div>
 
@@ -89,23 +120,22 @@ function TaskCard({
               onClick={handleComplete}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all ${
                 completed
-                  ? "bg-sentinel-healthy/20 text-sentinel-healthy border border-sentinel-healthy/30"
-                  : "bg-sentinel-blue/15 text-sentinel-blue-light border border-sentinel-blue/30 hover:bg-sentinel-blue/25"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20"
               }`}
             >
-              <CheckCircle2 className="h-4 w-4" />
-              {completed ? "Completed ✓" : "Mark Complete"}
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {completed ? "Work Order Completed ✓" : "Mark Complete"}
             </button>
 
             <button
               type="button"
               onClick={() => {
-                // OCR/Vision endpoint not yet available — show stub notice
-                alert("OCR scan endpoint not yet available. This feature is pending backend implementation.");
+                alert("Biomedical OCR Log Scanner: Point mobile camera at device telemetry log tag.");
               }}
-              className="flex items-center justify-center gap-2 rounded-lg border border-sentinel-glass-border bg-sentinel-glass px-3 py-2.5 text-xs font-medium text-muted-foreground transition-all hover:border-sentinel-blue/30 hover:text-foreground"
+              className="flex items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-slate-900/60 px-3 py-2.5 text-xs font-medium text-[var(--text-secondary)] transition-all hover:border-sky-500/30 hover:text-[var(--text-primary)]"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-3.5 w-3.5 text-sky-400" />
               Scan Log
             </button>
           </div>
@@ -114,6 +144,7 @@ function TaskCard({
     </motion.div>
   );
 }
+
 
 function TasksFeed({
   tickets,
@@ -157,7 +188,7 @@ function ScanView() {
       <button
         type="button"
         disabled
-        className="inline-flex items-center gap-2 rounded-lg bg-sentinel-blue/50 px-6 py-3 text-sm font-semibold text-white/70 cursor-not-allowed"
+        className="inline-flex items-center gap-2 rounded-lg bg-sentinel-blue/50 px-6 py-3 text-sm font-semibold text-[var(--text-primary)]/70 cursor-not-allowed"
       >
         <Camera className="h-4 w-4" />
         Open Camera

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, ShieldCheck, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -16,76 +16,85 @@ export function Navbar({ onMenuToggle, className }: NavbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 flex h-16 items-center justify-between border-b border-sentinel-glass-border bg-sentinel-bg-from/80 px-4 backdrop-blur-xl md:px-6",
+        "sticky top-0 z-50 flex h-14 items-center justify-between border-b border-slate-800 bg-[#070D1B] px-4 md:px-6",
         className
       )}
     >
       {/* Left: menu toggle + logo */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={onMenuToggle}
-          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-sentinel-glass hover:text-foreground lg:hidden"
+          className="rounded-md p-1.5 text-[var(--text-tertiary)] hover:bg-slate-800 hover:text-slate-100 lg:hidden"
           aria-label="Toggle sidebar"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sentinel-blue font-bold text-white text-sm">
-            S
+          <div className="flex h-7 w-7 items-center justify-center rounded bg-blue-600 font-bold text-[var(--text-primary)] text-xs">
+            M
           </div>
-          <span className="hidden text-lg font-bold tracking-tight text-foreground sm:inline">
-            Sentinel<span className="text-sentinel-blue">Ops</span>
-          </span>
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-extrabold tracking-wider text-slate-100 uppercase">
+              MEDTECARE
+            </span>
+            <span className="text-[0.6rem] font-medium text-[var(--text-tertiary)]">
+              Medical Device Safety & Risk Intelligence
+            </span>
+          </div>
         </Link>
       </div>
 
-      {/* Center: search */}
+      {/* Center: Search */}
       <div className="mx-4 hidden flex-1 max-w-md md:block">
         <div
           className={cn(
-            "relative flex items-center rounded-lg border transition-all duration-300",
-            searchFocused
-              ? "border-sentinel-blue/40 bg-sentinel-glass shadow-[0_0_15px_rgba(59,130,246,0.1)]"
-              : "border-sentinel-glass-border bg-sentinel-glass"
+            "relative flex items-center rounded border border-slate-800 bg-slate-900/80 transition-colors",
+            searchFocused && "border-blue-600/50 bg-slate-900"
           )}
         >
-          <Search className="ml-3 h-4 w-4 text-muted-foreground" />
+          <Search className="ml-3 h-3.5 w-3.5 text-[var(--text-tertiary)]" />
           <input
             type="text"
-            placeholder="Search equipment, alerts, tickets..."
-            className="w-full bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            placeholder="Search device by ID (e.g. DEV-88401), classification, manufacturer..."
+            className="w-full bg-transparent px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-500 focus:outline-none"
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
           />
-          <kbd className="mr-3 hidden rounded border border-sentinel-glass-border px-1.5 py-0.5 text-[0.6rem] text-muted-foreground lg:inline">
+          <kbd className="mr-2.5 hidden rounded border border-slate-700 bg-slate-800 px-1 py-0.5 text-[0.55rem] font-mono text-[var(--text-tertiary)] lg:inline">
             ⌘K
           </kbd>
         </div>
       </div>
 
-      {/* Right: notification + avatar */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-sentinel-glass hover:text-foreground"
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          {/* Unread badge */}
-          <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sentinel-critical text-[0.55rem] font-bold text-white">
-            3
-          </span>
-        </button>
+      {/* Right: User / Notifications */}
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-1.5 text-[0.65rem] text-[var(--text-tertiary)] border border-slate-800 bg-slate-900 px-2.5 py-1 rounded">
+          <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+          <span>Squad A + Squad B + Squad C Active</span>
+        </div>
 
         <button
           type="button"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-sentinel-blue/20 text-sm font-semibold text-sentinel-blue-light transition-all hover:bg-sentinel-blue/30"
-          aria-label="Profile menu"
+          className="relative rounded-md p-1.5 text-[var(--text-tertiary)] hover:bg-slate-800 hover:text-slate-100"
+          aria-label="Notifications"
         >
-          AD
+          <Bell className="h-4 w-4" />
+          <span className="absolute right-1 top-1 flex h-3 w-3 items-center justify-center rounded-full bg-rose-600 text-[0.5rem] font-bold text-[var(--text-primary)]">
+            2
+          </span>
         </button>
+
+        <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded bg-slate-800 text-xs font-bold text-blue-600 border border-slate-700">
+            RV
+          </div>
+          <div className="hidden text-left xl:block">
+            <p className="text-xs font-semibold text-slate-700">Dr. Rachel Vance</p>
+            <p className="text-[0.6rem] text-[var(--text-tertiary)]">Chief Biomedical Engineer</p>
+          </div>
+        </div>
       </div>
     </header>
   );

@@ -14,21 +14,23 @@ interface RiskGaugeProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 70) return "var(--sentinel-critical)";
-  if (score >= 40) return "var(--sentinel-warning)";
-  return "var(--sentinel-healthy)";
+  if (score >= 80) return "#DC2626"; // Critical Red
+  if (score >= 60) return "#EA580C"; // High Orange
+  if (score >= 30) return "#D97706"; // Moderate Amber
+  return "#16A34A"; // Low Green
 }
 
 function getScoreLabel(score: number): string {
-  if (score >= 70) return "Critical";
-  if (score >= 40) return "Warning";
-  return "Healthy";
+  if (score >= 80) return "CRITICAL RISK";
+  if (score >= 60) return "HIGH RISK";
+  if (score >= 30) return "MODERATE RISK";
+  return "LOW RISK";
 }
 
 export function RiskGauge({
   score,
-  size = 160,
-  strokeWidth = 10,
+  size = 140,
+  strokeWidth = 8,
   className,
   showLabel = true,
   animate = true,
@@ -41,7 +43,6 @@ export function RiskGauge({
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
       <svg width={size} height={size} className="-rotate-90">
-        {/* Background track */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -50,7 +51,6 @@ export function RiskGauge({
           stroke="rgba(255,255,255,0.06)"
           strokeWidth={strokeWidth}
         />
-        {/* Progress arc */}
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -62,25 +62,20 @@ export function RiskGauge({
           strokeDasharray={circumference}
           initial={animate ? { strokeDashoffset: circumference } : { strokeDashoffset: circumference - progress }}
           animate={{ strokeDashoffset: circumference - progress }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-          style={{
-            filter: `drop-shadow(0 0 8px ${color})`,
-          }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
         />
       </svg>
-      {/* Center text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <motion.span
-          className="text-3xl font-bold tracking-tight"
+          className="text-2xl font-black font-mono tracking-tight"
           style={{ color }}
           initial={animate ? { opacity: 0 } : { opacity: 1 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
         >
-          {score}
+          {score} <span className="text-xs font-normal text-[var(--text-tertiary)]">/ 100</span>
         </motion.span>
         {showLabel && (
-          <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground mt-1">
+          <span className="text-[0.6rem] font-bold uppercase tracking-wider text-[var(--text-secondary)] mt-0.5">
             {getScoreLabel(score)}
           </span>
         )}
@@ -89,7 +84,6 @@ export function RiskGauge({
   );
 }
 
-/* Small inline confidence ring */
 interface ConfidenceRingProps {
   percent: number;
   size?: number;
@@ -111,16 +105,16 @@ export function ConfidenceRing({ percent, size = 36, className }: ConfidenceRing
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="var(--sentinel-blue)"
+          stroke="#2563EB"
           strokeWidth={sw}
           strokeLinecap="round"
           strokeDasharray={c}
           initial={{ strokeDashoffset: c }}
           animate={{ strokeDashoffset: c - p }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         />
       </svg>
-      <span className="absolute text-[0.6rem] font-bold text-sentinel-blue-light">
+      <span className="absolute text-[0.6rem] font-bold font-mono text-sky-400">
         {percent}%
       </span>
     </div>

@@ -1,38 +1,29 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
-  variable: "--font-sans",
   subsets: ["latin"],
+  variable: "--font-inter",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "SentinelOps — Predictive Maintenance Platform",
+  title: "MedteCare | Medical Device Safety & Risk Intelligence",
   description:
-    "AI-powered predictive maintenance for industrial fleets. Real-time risk scoring, autonomous diagnostic agents, and proactive maintenance scheduling.",
-  keywords: [
-    "predictive maintenance",
-    "AI diagnostics",
-    "fleet monitoring",
-    "risk scoring",
-    "industrial IoT",
-  ],
+    "Predict risk before medical devices fail. Machine learning risk scoring, SHAP explainability, dual RAG retrieval, and AI-assisted diagnostic reasoning for biomedical engineering teams.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen bg-[#fafafa] text-[#1d1d1f] antialiased selection:bg-blue-500/20 selection:text-blue-900">
+        {children}
+      </body>
     </html>
   );
 }
