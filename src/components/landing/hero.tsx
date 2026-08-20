@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 
 export function LandingHero() {
   return (
-    <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 text-center">
+    <section id="overview" className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 text-center">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 space-y-8">
         {/* Eyebrow Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-black/[0.02] px-3.5 py-1 text-xs text-[var(--text-secondary)] backdrop-blur-md">
@@ -21,9 +21,11 @@ export function LandingHero() {
 
         {/* Main Headline */}
         <div className="space-y-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--text-primary)] leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.1]">
             Predict Risk Before <br className="hidden sm:inline" />
-            Medical Devices Fail.
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">
+              Medical Devices Fail.
+            </span>
           </h1>
           <p className="text-sm sm:text-base text-[var(--text-tertiary)] font-normal leading-relaxed max-w-2xl mx-auto">
             MedteCare combines machine learning, explainability, historical medical-device evidence, and AI-assisted diagnostic reasoning to help biomedical engineering teams identify devices requiring attention.

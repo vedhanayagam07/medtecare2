@@ -17,7 +17,6 @@ import {
 import { GlassCard } from "@/components/shared/glass-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
-  ticketsList as mockTicketsList,
   techniciansList,
   formatRelativeTime,
 } from "@/lib/mock-data";
@@ -268,7 +267,7 @@ function ProfileView({ activeCount, resolvedCount }: { activeCount: number; reso
 
 export default function TechnicianPage() {
   const [activeTab, setActiveTab] = useState<MobileTab>("tasks");
-  const [allTickets, setAllTickets] = useState<MaintenanceTicket[]>(mockTicketsList);
+  const [allTickets, setAllTickets] = useState<MaintenanceTicket[]>([]);
 
   useEffect(() => {
     fetchTickets().then((data) => {

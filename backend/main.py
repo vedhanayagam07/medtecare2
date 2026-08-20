@@ -33,7 +33,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # For production, restrict this to frontend domains
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -46,11 +46,12 @@ except Exception as e:
     logger.error(f"Failed to initialize DiagnosticEngine: {e}")
     engine = None
 
-# ---- In-memory state for ticket status tracking (hackathon demo) ----
-ticket_status_store: Dict[str, str] = {}
-# Cache for generated alerts/tickets so they're stable across requests
-_alerts_cache: Optional[List[Dict]] = None
-_tickets_cache: Optional[List[Dict]] = None
+from backend.database import init_db, get_alerts, insert_alert, get_tickets, insert_ticket, update_ticket_status as db_update_ticket_status
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
 _devices_cache: Optional[List[Dict]] = None
 
 def _get_cached_devices(limit: int = 20) -> List[Dict]:
@@ -62,9 +63,9 @@ def _get_cached_devices(limit: int = 20) -> List[Dict]:
 
 def _generate_alerts(devices: List[Dict]) -> List[Dict]:
     """Generate alerts from devices with elevated risk scores."""
-    global _alerts_cache
-    if _alerts_cache is not None:
-        return _alerts_cache
+    db_alerts = get_alerts()
+    if db_alerts:
+        return db_alerts
     
     alerts = []
     risk_driver_templates = {
@@ -106,19 +107,15 @@ def _generate_alerts(devices: List[Dict]) -> List[Dict]:
             alert["status"] = "acknowledged"
         
         alerts.append(alert)
+        insert_alert(alert)
     
-    _alerts_cache = alerts
     return alerts
 
 def _generate_tickets(devices: List[Dict]) -> List[Dict]:
     """Generate maintenance tickets from high-risk devices."""
-    global _tickets_cache
-    if _tickets_cache is not None:
-        # Apply any status updates from the in-memory store
-        for ticket in _tickets_cache:
-            if ticket["id"] in ticket_status_store:
-                ticket["status"] = ticket_status_store[ticket["id"]]
-        return _tickets_cache
+    db_tickets = get_tickets()
+    if db_tickets:
+        return db_tickets
     
     tickets = []
     title_templates = [
@@ -141,8 +138,7 @@ def _generate_tickets(devices: List[Dict]) -> List[Dict]:
         now = datetime.utcnow()
         ticket_id = f"TKT-{2000 + i}"
         
-        # Check in-memory status store first
-        status = ticket_status_store.get(ticket_id, "open")
+        status = "open"
         if status == "open" and i % 4 == 1:
             status = "in-progress"
         
@@ -163,8 +159,8 @@ def _generate_tickets(devices: List[Dict]) -> List[Dict]:
             ticket["assignedTechnician"] = technicians[i % len(technicians)]
         
         tickets.append(ticket)
+        insert_ticket(ticket)
     
-    _tickets_cache = tickets
     return tickets
 
 
@@ -186,6 +182,39 @@ async def get_devices(limit: int = Query(default=20, ge=1, le=100)):
     """Returns a list of real medical devices from the dataset for the dashboard."""
     devices = _get_cached_devices(limit=limit)
     return {"devices": devices}
+
+@app.post("/api/v1/devices/simulate-live")
+async def simulate_live_data():
+    """Simulates a live telemetry spike on a random device, bringing it to a critical state."""
+    devices = _get_cached_devices(limit=50)
+    if not devices:
+        raise HTTPException(status_code=404, detail="No devices available to simulate.")
+    
+    # Pick a random device that is not already critical
+    candidates = [d for d in devices if d.get("riskScore", 0) < 80]
+    if not candidates:
+        candidates = devices
+    
+    device = random.choice(candidates)
+    
+    # Spike the risk score
+    device["riskScore"] = random.randint(90, 99)
+    device["status"] = "critical"
+    device["previousEvents"] = device.get("previousEvents", 0) + 1
+    
+    # Add a new alert for this simulated event
+    alert = {
+        "id": f"ALT-LIVE-{random.randint(1000, 9999)}",
+        "equipmentId": device["id"],
+        "equipmentName": device["name"],
+        "riskDriver": "Live Telemetry Anomaly Detected — Immediate Inspection Required",
+        "severity": "critical",
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": "open",
+    }
+    insert_alert(alert)
+    
+    return {"message": "Live data simulation triggered", "device": device, "alert": alert}
 
 @app.get("/api/v1/devices/stats")
 async def get_device_stats():
@@ -218,16 +247,9 @@ async def update_ticket_status(ticket_id: str, request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid request: {e}")
     
-    ticket_status_store[ticket_id] = new_status
-    
-    # Update cached tickets if they exist
-    global _tickets_cache
-    if _tickets_cache:
-        for ticket in _tickets_cache:
-            if ticket["id"] == ticket_id:
-                ticket["status"] = new_status
-                ticket["updatedAt"] = datetime.utcnow().isoformat()
-                break
+    success = db_update_ticket_status(ticket_id, new_status)
+    if not success:
+        raise HTTPException(status_code=404, detail="Ticket not found")
     
     return {"id": ticket_id, "status": new_status, "updated": True}
 

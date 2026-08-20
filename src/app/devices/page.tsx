@@ -3,22 +3,62 @@
 import React, { useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { equipmentList as mockEquipmentList, demoPrimaryDevice } from "@/lib/mock-data";
+import { demoPrimaryDevice } from "@/lib/mock-data";
 import type { Equipment } from "@/lib/mock-data";
+import { fetchDevices, simulateLiveData } from "@/lib/api";
+import { useEffect } from "react";
+import { Activity } from "lucide-react";
 
 export default function DevicesPage() {
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Equipment>(demoPrimaryDevice);
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  const loadDevices = () => {
+    fetchDevices(50).then((data) => {
+      if (data && data.length > 0) {
+        setEquipmentList(data);
+        if (selectedDevice.id === demoPrimaryDevice.id) {
+          setSelectedDevice(data[0]);
+        }
+      }
+    });
+  };
+
+  useEffect(() => {
+    loadDevices();
+  }, []);
+
+  const handleSimulate = async () => {
+    setIsSimulating(true);
+    const result = await simulateLiveData();
+    if (result && result.device) {
+      loadDevices();
+      setSelectedDevice(result.device);
+    }
+    setIsSimulating(false);
+  };
 
   return (
     <AppShell>
       <div className="space-y-6 text-left">
-        <div className="border-b border-[var(--border-default)] pb-4">
-          <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">
-            Medical Device Inventory & Enterprise Asset Profile
-          </h1>
-          <p className="text-xs text-[var(--text-tertiary)] mt-1">
-            Enterprise clinical device records, risk classifications, and historical safety metrics.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--border-default)] pb-4 gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">
+              Medical Device Inventory & Enterprise Asset Profile
+            </h1>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              Enterprise clinical device records, risk classifications, and historical safety metrics.
+            </p>
+          </div>
+          <button
+            onClick={handleSimulate}
+            disabled={isSimulating}
+            className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
+          >
+            <Activity className={`h-4 w-4 ${isSimulating ? "animate-spin" : "animate-pulse"}`} />
+            Simulate Live Sensor Anomaly
+          </button>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-12">
@@ -26,13 +66,13 @@ export default function DevicesPage() {
           <div className="lg:col-span-5 p-5 rounded-xl bg-[var(--surface-1)] border border-[var(--border-default)] space-y-3">
             <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                Monitored Devices ({mockEquipmentList.length})
+                Monitored Devices ({equipmentList.length})
               </h3>
               <span className="text-[0.65rem] font-mono text-[var(--text-tertiary)]">Select to View Record</span>
             </div>
 
             <div className="space-y-2">
-              {mockEquipmentList.map((dev) => (
+              {equipmentList.map((dev) => (
                 <div
                   key={dev.id}
                   onClick={() => setSelectedDevice(dev)}

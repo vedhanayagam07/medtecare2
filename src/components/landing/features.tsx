@@ -40,7 +40,7 @@ export function LandingFeatures() {
   ];
 
   return (
-    <section id="features" className="py-24 px-6 border-t border-[var(--border-default)] bg-[#050505]">
+    <section id="features" className="py-24 px-6 border-t border-[var(--border-default)]">
       <div className="max-w-7xl mx-auto text-center space-y-12">
         <div>
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 mb-2 block">

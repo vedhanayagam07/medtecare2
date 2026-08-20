@@ -29,8 +29,6 @@ const navItems = [
   { href: "/dashboard/recommendations", label: "Recommendations", icon: CheckSquare },
   { href: "/dashboard/human-review", label: "Human Review Queue", icon: UserCheck },
   { href: "/dashboard/explainability", label: "Model Explainability", icon: Brain },
-  { href: "/dashboard/architecture", label: "System Architecture", icon: GitFork },
-  { href: "/dashboard/business-value", label: "Business Value", icon: Briefcase },
 ];
 
 interface SidebarProps {

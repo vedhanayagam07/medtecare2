@@ -50,14 +50,6 @@ const navGroups = [
       { href: "/explainability", label: "Explainability", icon: Brain },
     ],
   },
-  {
-    label: "System",
-    items: [
-      { href: "/architecture", label: "Architecture", icon: GitFork },
-      { href: "/business", label: "Business Value", icon: Briefcase },
-      { href: "/technology", label: "Tech Stack", icon: Cpu },
-    ],
-  },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -66,7 +58,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [groupOpen, setGroupOpen] = useState<Record<string, boolean>>({
     Operations: true,
     Intelligence: true,
-    System: true,
   });
 
   const SidebarContent = () => (

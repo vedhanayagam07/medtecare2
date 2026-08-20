@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 
 export function LandingFinalCTA() {
   return (
-    <footer className="border-t border-[var(--border-default)] bg-[#050505] text-left">
+    <footer className="border-t border-[var(--border-default)] text-left">
       {/* CTA Box */}
       <div className="max-w-7xl mx-auto px-6 py-20 text-center border-b border-[var(--border-default)]">
         <div className="max-w-3xl mx-auto space-y-6">

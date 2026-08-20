@@ -31,7 +31,7 @@ export function LandingNavbar() {
           <a href="#features" className="transition-colors hover:text-[var(--text-primary)]">
             Capabilities
           </a>
-          <a href="#technology" className="transition-colors hover:text-[var(--text-primary)]">
+          <a href="#architecture" className="transition-colors hover:text-[var(--text-primary)]">
             Technology
           </a>
         </nav>
@@ -62,7 +62,7 @@ export function LandingNavbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[var(--border-default)] bg-black/95 px-4 py-4 space-y-3 font-medium text-xs text-[var(--text-secondary)]">
+        <div className="md:hidden border-b border-[var(--border-default)] bg-[var(--surface-1)] px-4 py-4 space-y-3 font-medium text-xs text-[var(--text-secondary)]">
           <a href="#overview" onClick={() => setMobileMenuOpen(false)} className="block py-1">
             Overview
           </a>
@@ -72,7 +72,7 @@ export function LandingNavbar() {
           <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-1">
             Capabilities
           </a>
-          <a href="#technology" onClick={() => setMobileMenuOpen(false)} className="block py-1">
+          <a href="#architecture" onClick={() => setMobileMenuOpen(false)} className="block py-1">
             Technology
           </a>
           <div className="pt-3 border-t border-[var(--border-default)]">

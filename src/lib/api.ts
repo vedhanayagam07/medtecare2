@@ -71,6 +71,11 @@ export async function fetchDevices(limit = 20): Promise<Equipment[]> {
   return data?.devices ?? [];
 }
 
+/** Simulate a live telemetry spike on a random device */
+export async function simulateLiveData(): Promise<{ message: string, device: Equipment } | null> {
+  return apiFetch<{ message: string, device: Equipment }>(`/api/v1/devices/simulate-live`, { method: "POST" });
+}
+
 /** Fetch KPI stats computed from full dataset */
 export async function fetchStats(): Promise<DeviceStatsResponse | null> {
   return apiFetch<DeviceStatsResponse>("/api/v1/devices/stats");

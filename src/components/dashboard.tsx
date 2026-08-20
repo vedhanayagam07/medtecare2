@@ -10,21 +10,19 @@ import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import {
   kpiData,
   demoPrimaryDevice,
-  equipmentList as mockEquipmentList,
-  riskTrendData as mockRiskTrendData,
 } from "@/lib/mock-data";
 import type { Equipment, RiskDataPoint } from "@/lib/mock-data";
-import { fetchDevices, fetchStats } from "@/lib/api";
+import { fetchDevices, fetchStats, fetchRiskTrend } from "@/lib/api";
 
 export function Dashboard() {
-  const [equipmentList, setEquipmentList] = useState<Equipment[]>(mockEquipmentList);
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
   const [kpis, setKpis] = useState(kpiData);
-  const [riskTrend] = useState<RiskDataPoint[]>(mockRiskTrendData);
+  const [riskTrend, setRiskTrend] = useState<RiskDataPoint[]>([]);
 
   useEffect(() => {
-    Promise.allSettled([fetchDevices(20), fetchStats()]).then(
-      ([devRes, statsRes]) => {
-        if (devRes.status === "fulfilled" && devRes.value.length > 0) {
+    Promise.allSettled([fetchDevices(20), fetchStats(), fetchRiskTrend()]).then(
+      ([devRes, statsRes, trendRes]) => {
+        if (devRes.status === "fulfilled" && devRes.value && devRes.value.length > 0) {
           setEquipmentList(devRes.value);
         }
         if (statsRes.status === "fulfilled" && statsRes.value) {
@@ -40,6 +38,9 @@ export function Dashboard() {
               return k;
             })
           );
+        }
+        if (trendRes.status === "fulfilled" && trendRes.value && trendRes.value.length > 0) {
+          setRiskTrend(trendRes.value);
         }
       }
     );
