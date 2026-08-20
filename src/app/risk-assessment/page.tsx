@@ -10,15 +10,16 @@ import { ShieldAlert, Info, RefreshCw, BarChart2 } from "lucide-react";
 export default function RiskAssessmentPage() {
   const [deviceIdInput, setDeviceIdInput] = useState("DEV-88401");
   const [isAssessing, setIsAssessing] = useState(false);
-  const [assessmentDone, setAssessmentDone] = useState(true);
+  const [assessmentDone, setAssessmentDone] = useState(false);
 
   const handleRunAssessment = (e: React.FormEvent) => {
     e.preventDefault();
+    setAssessmentDone(false);
     setIsAssessing(true);
     setTimeout(() => {
       setIsAssessing(false);
       setAssessmentDone(true);
-    }, 600);
+    }, 1200);
   };
 
   return (
@@ -122,7 +123,7 @@ export default function RiskAssessmentPage() {
               <div>
                 <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3 mb-4">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                    Assessment Results — {demoPrimaryDevice.id}
+                    Assessment Results — {deviceIdInput || demoPrimaryDevice.id}
                   </h3>
                   <StatusBadge variant="critical">CRITICAL RISK</StatusBadge>
                 </div>
